@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const audio = document.getElementById("speechAudio");
   const background = new Image();
   function resizeCanvas() {
-    const aspectRatio = 18 / 13;
+    const aspectRatio = 1152 / 1826;
     const maxWidth = window.innerWidth;
     const maxHeight = window.innerHeight;
 
@@ -74,15 +74,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function animate() {
     requestAnimationFrame(animate);
-    analyser.getByteFrequencyData(dataArray);
+    analyser?.getByteFrequencyData(dataArray);
 
     // Increment the mouth update counter
     mouthUpdateCounter++;
 
-    if (mouthUpdateCounter >= mouthUpdateFrequency) {
+    if (mouthUpdateCounter >= mouthUpdateFrequency && dataArray) {
       // Update the mouth state based on audio analysis
-      let sum = dataArray.reduce((a, b) => a + b, 0);
-      let average = sum / dataArray.length;
+      let sum = dataArray?.reduce((a, b) => a + b, 0) || 0;
+      let average = sum / dataArray?.length;
 
       if (average < 5) {
         mouthState = 2; // Mouth closed
@@ -114,7 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!audioContext) {
       setupAudioContext();
     }
-    animate();
   });
 
   images.forEach((img, index) => {
@@ -126,4 +125,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   resizeCanvas();
+  animate();
 });
