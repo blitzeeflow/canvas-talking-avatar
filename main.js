@@ -18,6 +18,12 @@ document.addEventListener("DOMContentLoaded", function () {
       canvas.width = maxWidth;
       canvas.height = maxWidth / aspectRatio;
     }
+
+    if (window.innerWidth > window.innerHeight) {
+      canvas.style.transform = "translate(-50%,20%)";
+    } else {
+      canvas.style.transform = "translate(-50%,10%)";
+    }
     // Redraw or reposition elements on canvas if needed
     // For instance, redraw the initial mouth state image
     ctx.drawImage(images[2], 0, 0, canvas.width, canvas.height);
