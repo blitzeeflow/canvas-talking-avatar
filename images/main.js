@@ -5,9 +5,19 @@ document.addEventListener("DOMContentLoaded", function () {
   const background = new Image();
   function resizeCanvas() {
     const aspectRatio = 18 / 13;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerWidth / aspectRatio;
+    const maxWidth = window.innerWidth;
+    const maxHeight = window.innerHeight;
 
+    // Determine the limiting dimension
+    if (maxWidth / maxHeight > aspectRatio) {
+      // Window is wider than the desired aspect ratio
+      canvas.height = maxHeight;
+      canvas.width = maxHeight * aspectRatio;
+    } else {
+      // Window is taller than or equal to the desired aspect ratio
+      canvas.width = maxWidth;
+      canvas.height = maxWidth / aspectRatio;
+    }
     // Redraw or reposition elements on canvas if needed
     // For instance, redraw the initial mouth state image
     ctx.drawImage(images[2], 0, 0, canvas.width, canvas.height);
