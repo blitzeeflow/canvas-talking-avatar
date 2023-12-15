@@ -18,14 +18,49 @@
         left: 50%;
         transform: translateX(-50%);
       }
+      .play-button-outer.hide {
+        display: none;
+      }
+      .play-button-outer {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10em;
+        height: 10em;
+        background-color: rgba(0, 0, 0, 0.7);
+        cursor: pointer;
+      }
+
+      .play-button {
+        margin: 0 auto;
+        top: 25%;
+        position: relative;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 2.5em 0 2.5em 5em;
+        border-color: transparent transparent transparent #fff;
+        opacity: 0.75;
+      }
+
+      .play-button-outer:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .play-button-outer:hover .play-button {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
     <canvas id="myCanvas" width="700" height="900"></canvas>
     <!-- Adjust size as needed -->
-    <audio id="speechAudio" src="hook.mp3" controls></audio>
+    <audio id="speechAudio" src="hook.mp3"></audio>
     <!-- Replace with your MP3 path -->
-
+    <div class="play-button-outer" id="play">
+      <div class="play-button"></div>
+    </div>
     <!-- Adjust size as needed -->
     <script src="main.js"></script>
   </body>

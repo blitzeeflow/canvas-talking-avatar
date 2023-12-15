@@ -3,6 +3,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const ctx = canvas.getContext("2d");
   const audio = document.getElementById("speechAudio");
   const background = new Image();
+  let swayAngle = 0;
+  let swayDirection = 1;
+  const maxSwayAngle = 0.002; // Maximum sway angle, for subtlety
+  const swaySpeed = 0.00005; // Speed of swaying
   function resizeCanvas() {
     const aspectRatio = 1152 / 1826;
     const maxWidth = window.innerWidth;
@@ -30,6 +34,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   window.addEventListener("resize", resizeCanvas);
+  document.querySelector("#play").addEventListener("click", () => {
+    console.log("click", audioContext);
+    if (!audioContext) {
+      setupAudioContext();
+    }
+    document.querySelector("#play").classList.add("hide");
+    audio.play();
+  });
 
   let mouthUpdateCounter = 0;
   let mouthUpdateFrequency = 7; // Higher value = slower mouth movement
@@ -112,8 +124,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // Combine mouth state and blink state to get current image index
     let currentImageIndex = mouthState + (isBlinking ? 3 : 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-    ctx.drawImage(images[currentImageIndex], 0, 0, canvas.width, canvas.height);
+
+    // Calculate the pivot point (e.g., bottom center of the image)
+    const xPivot = canvas.width / 2;
+    const yPivot = canvas.height - images[currentImageIndex].height / 2;
+
+    // Update sway angle for subtle and consistent swaying
+    swayAngle += swaySpeed * swayDirection;
+    if (swayAngle > maxSwayAngle || swayAngle < -maxSwayAngle) {
+      swayDirection *= -1; // Change direction when max or min is reached
+    }
+    ctx.save();
+    // Translate to the bottom center of the image
+    ctx.translate(xPivot, yPivot);
+
+    ctx.rotate(swayAngle);
+    ctx.drawImage(
+      images[currentImageIndex],
+      -canvas.width / 2,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    // Restore the canvas state
+    ctx.restore();
   }
 
   audio.addEventListener("play", () => {
