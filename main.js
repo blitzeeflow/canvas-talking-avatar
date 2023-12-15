@@ -1,49 +1,78 @@
 document.addEventListener("DOMContentLoaded", function () {
   const canvas = document.getElementById("myCanvas");
   const ctx = canvas.getContext("2d");
+  const canvasStream = canvas.captureStream(30); // 30 FPS
   const audio = document.getElementById("speechAudio");
-  const background = new Image();
+  const audioInput = document.getElementById("audioInput");
+  const imageInput = document.getElementById("imageInput");
+  let recorder;
+  // Aspect ratios for YouTube (16:9) and TikTok (9:16)
+  const youtubeAspectRatio = 16 / 9;
+  const tiktokAspectRatio = 9 / 16;
+  let currentImageIndex = 2;
+  // Variable to store current video type ("youtube" or "tiktok")
+  let videoType = "youtube"; // Change as needed
+  let lastTimestamp = 0;
   let swayAngle = 0;
   let swayDirection = 1;
   const maxSwayAngle = 0.002; // Maximum sway angle, for subtlety
   const swaySpeed = 0.00005; // Speed of swaying
+  let background = new Image();
+  background.src = "images.bg.png"; // Replace with your background image path
+  background.onload = () => {
+    drawBackground();
+  };
+
   function resizeCanvas() {
-    const aspectRatio = 1152 / 1826;
-    const maxWidth = window.innerWidth;
-    const maxHeight = window.innerHeight;
+    const aspectRatio =
+      videoType === "youtube" ? youtubeAspectRatio : tiktokAspectRatio;
 
-    // Determine the limiting dimension
-    if (maxWidth / maxHeight > aspectRatio) {
-      // Window is wider than the desired aspect ratio
-      canvas.height = maxHeight;
-      canvas.width = maxHeight * aspectRatio;
+    const windowWidth = canvas.parentElement.clientWidth;
+    const windowHeight = canvas.parentElement.clientHeight;
+
+    // Calculate the canvas size
+    let canvasWidth, canvasHeight;
+
+    if (windowHeight < windowWidth / aspectRatio) {
+      canvasHeight = windowHeight;
+      canvasWidth = canvasHeight * aspectRatio;
     } else {
-      // Window is taller than or equal to the desired aspect ratio
-      canvas.width = maxWidth;
-      canvas.height = maxWidth / aspectRatio;
+      canvasWidth = windowWidth;
+      canvasHeight = canvasWidth / aspectRatio;
     }
 
-    if (window.innerWidth > window.innerHeight) {
-      canvas.style.transform = "translate(-50%,20%)";
-    } else if (window.innerWidth >= 630) {
-      canvas.style.transform = "translate(-50%,10%)";
-    } else {
-      canvas.style.transform = "translate(-50%,0%)";
-    }
-    // Redraw or reposition elements on canvas if needed
-    // For instance, redraw the initial mouth state image
-    ctx.drawImage(images[2], 0, 0, canvas.width, canvas.height);
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    // Redraw the image
+    drawImageScaled(images[currentImageIndex]);
+  }
+
+  function drawImageScaled(img) {
+    const hRatio = canvas.width / img.width;
+    const vRatio = canvas.height / img.height;
+    const ratio = Math.min(hRatio, vRatio);
+
+    const centerShift_x = (canvas.width - img.width * ratio) / 2;
+    const centerShift_y = (canvas.height - img.height * ratio) / 2;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const canvasAspectRatio = canvas.width / canvas.height;
+    drawBackground();
+    ctx.drawImage(
+      img,
+      0,
+      0,
+      img.width,
+      img.height,
+      centerShift_x,
+      centerShift_y + canvas.height * 0.2,
+      img.width * ratio,
+      img.height * ratio
+    );
   }
 
   window.addEventListener("resize", resizeCanvas);
-  document.querySelector("#play").addEventListener("click", () => {
-    console.log("click", audioContext);
-    if (!audioContext) {
-      setupAudioContext();
-    }
-    document.querySelector("#play").classList.add("hide");
-    audio.play();
-  });
 
   let mouthUpdateCounter = 0;
   let mouthUpdateFrequency = 7; // Higher value = slower mouth movement
@@ -71,11 +100,13 @@ document.addEventListener("DOMContentLoaded", function () {
   let mouthState = 2; // Initial state: mouth closed
   let isBlinking = false;
   let audioContext, analyser, source, dataArray;
-
+  let audioDestination;
   function setupAudioContext() {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioContext.createAnalyser();
     source = audioContext.createMediaElementSource(audio);
+    audioDestination = audioContext.createMediaStreamDestination();
+    source.connect(audioDestination);
     source.connect(analyser);
     analyser.connect(audioContext.destination);
 
@@ -88,11 +119,11 @@ document.addEventListener("DOMContentLoaded", function () {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
-  let lastBlinkTime = 0;
-  const blinkFrequency = 4000; // Time in milliseconds (e.g., blink every 4 seconds)
+  let timeSinceLastBlink = 0;
+  let timeToNextBlink = 4000; // Initial time until the next blink (4 seconds)
   const blinkDuration = 200; // Duration of a blink in milliseconds
 
-  function animate() {
+  function animate(timestamp) {
     requestAnimationFrame(animate);
     analyser?.getByteFrequencyData(dataArray);
 
@@ -114,40 +145,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
       mouthUpdateCounter = 0; // Reset the counter
     }
-    // Blinking logic
-    if (!isBlinking && Math.random() < 0.01) {
-      // Adjust probability as needed
+    // Update the time since last blink
+    if (timeSinceLastBlink < timeToNextBlink) {
+      timeSinceLastBlink += timestamp ? timestamp - lastTimestamp : 16; // Approximate time passed since last frame (16ms for 60fps)
+    } else {
+      // Trigger a blink
       isBlinking = true;
       setTimeout(() => {
         isBlinking = false;
-      }, 200); // Blink duration
+      }, blinkDuration);
+
+      // Reset the timer and set the time for the next blink (4-7 seconds randomly)
+      timeSinceLastBlink = 0;
+      timeToNextBlink = 4000 + Math.random() * 3000;
     }
+
+    lastTimestamp = timestamp;
 
     // Combine mouth state and blink state to get current image index
-    let currentImageIndex = mouthState + (isBlinking ? 3 : 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    currentImageIndex = mouthState + (isBlinking ? 3 : 0);
 
-    // Calculate the pivot point (e.g., bottom center of the image)
-    const xPivot = canvas.width / 2;
-    const yPivot = canvas.height - images[currentImageIndex].height / 2;
-
-    // Update sway angle for subtle and consistent swaying
-    swayAngle += swaySpeed * swayDirection;
-    if (swayAngle > maxSwayAngle || swayAngle < -maxSwayAngle) {
-      swayDirection *= -1; // Change direction when max or min is reached
-    }
-    ctx.save();
-    // Translate to the bottom center of the image
-    ctx.translate(xPivot, yPivot);
-
-    ctx.rotate(swayAngle);
-    ctx.drawImage(
-      images[currentImageIndex],
-      -canvas.width / 2,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    drawImageScaled(images[currentImageIndex]);
     // Restore the canvas state
     ctx.restore();
   }
@@ -164,6 +182,117 @@ document.addEventListener("DOMContentLoaded", function () {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       }
     };
+  });
+
+  function drawBackground() {
+    const ctx = canvas.getContext("2d");
+    const canvasAspectRatio = canvas.width / canvas.height;
+    const imgAspectRatio = background.width / background.height;
+
+    let drawWidth, drawHeight, offsetX, offsetY;
+
+    // Scaling logic based on aspect ratios
+    if (canvasAspectRatio > imgAspectRatio) {
+      // Canvas is wider than the image (relative to their aspect ratios)
+      drawWidth = canvas.width;
+      drawHeight = drawWidth / imgAspectRatio;
+      offsetX = 0;
+      offsetY = (canvas.height - drawHeight) / 2; // Center vertically
+    } else {
+      // Canvas is taller than or equal to the image (relative to their aspect ratios)
+      drawHeight = canvas.height;
+      drawWidth = drawHeight * imgAspectRatio;
+      offsetX = (canvas.width - drawWidth) / 2; // Center horizontally
+      offsetY = 0;
+    }
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the scaled image
+    ctx.drawImage(background, offsetX, offsetY, drawWidth, drawHeight);
+  }
+
+  function onSizeChange(event) {
+    videoType = event.target.value;
+    resizeCanvas();
+  }
+  imageInput.addEventListener("change", function (event) {
+    const files = event.target.files;
+    if (files.length > 0) {
+      const imageUrl = URL.createObjectURL(files[0]);
+      background = new Image();
+      background.onload = () => {
+        console.log("imageUrl", imageUrl);
+        drawBackground();
+      };
+      background.src = imageUrl;
+    }
+  });
+  audioInput.addEventListener("change", function (event) {
+    const files = event.target.files;
+    if (files.length > 0) {
+      const audioUrl = URL.createObjectURL(files[0]);
+      speechAudio.src = audioUrl;
+    }
+  });
+
+  document
+    .querySelector("#playButton")
+    .addEventListener("click", function (event) {
+      if (!audioContext) {
+        setupAudioContext();
+      }
+      audio.play();
+    });
+  document
+    .querySelector("#stopButton")
+    .addEventListener("click", function (event) {
+      if (!audioContext) {
+        setupAudioContext();
+      }
+      audio.pause();
+      audio.currentTime = 0;
+    });
+
+  document.querySelector("#youtube").addEventListener("change", onSizeChange);
+
+  document.querySelector("#tiktok").addEventListener("change", onSizeChange);
+  document.querySelector("#recordButton").addEventListener("click", () => {
+    const combinedStream = new MediaStream([
+      ...canvasStream.getTracks(),
+      ...audioDestination.stream.getTracks(),
+    ]);
+
+    // Record the combined stream
+    recorder = new MediaRecorder(combinedStream, {
+      mimeType: "video/webm",
+    });
+
+    const chunks = [];
+    recorder.ondataavailable = (event) => chunks.push(event.data);
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: "video/webm;codecs=vp8,opus" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "recording.webm";
+      a.click();
+    };
+
+    document
+      .querySelector("#stopRecordingButton")
+      .addEventListener("click", () => {
+        recorder?.stop();
+      });
+
+    audio.onended = () => {
+      console.log("stopped audio");
+      recorder?.stop();
+    };
+
+    // Start recording
+    recorder.start();
   });
 
   resizeCanvas();

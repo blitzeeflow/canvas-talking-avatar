@@ -3,20 +3,54 @@
   <head>
     <title>Face Animation</title>
     <style>
+      :root {
+        --dark-bg: #0c0c0c;
+        --action-color: #1f1f21;
+      }
+      input {
+        cursor: pointer;
+      }
       body {
         width: 100vw;
         height: 100vh;
         padding: 0;
         margin: 0;
-        background-image: url(images/bg.png);
+        background: black;
         background-size: cover;
         overflow: hidden;
+        color: white;
+        font-family: "Trebuchet MS", sans-serif;
+        display: flex;
+        flex-direction: column;
       }
-      canvas {
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
+      .header {
+        background-color: var(--dark-bg);
+        color: white;
+        padding: 20px;
+        font-weight: bold;
+      }
+      .main-container {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        background-color: #242424;
+        height: 100%;
+      }
+      .sidebar {
+        /* width: 30%; */
+        background-color: var(--dark-bg);
+        color: white;
+        height: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        font-size: 12px;
+      }
+      .content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
       }
       .play-button-outer.hide {
         display: none;
@@ -51,16 +85,115 @@
       .play-button-outer:hover .play-button {
         opacity: 1;
       }
+      .custom-file-input::-webkit-file-upload-button {
+        visibility: hidden;
+      }
+      .input {
+        display: inline-block;
+        background: var(--action-color);
+        border-radius: 6px;
+        border: 0;
+        padding: 5px 8px;
+        outline: none;
+        white-space: nowrap;
+        -webkit-user-select: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 12px;
+        color: white;
+      }
+      .label {
+        margin-right: 10px;
+      }
+      button {
+        background: var(--action-color);
+        border-radius: 6px;
+        border: 0;
+        padding: 5px 8px;
+        font-weight: 700;
+        font-size: 12px;
+        color: white;
+        width: 100%;
+      }
     </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body>
-    <canvas id="myCanvas" width="700" height="900"></canvas>
-    <!-- Adjust size as needed -->
-    <audio id="speechAudio" src="hook.mp3"></audio>
-    <!-- Replace with your MP3 path -->
-    <div class="play-button-outer" id="play">
-      <div class="play-button"></div>
+    <div class="header">
+      <span>Avatar LipSync</span>
     </div>
+    <div class="main-container">
+      <div class="sidebar">
+        <h1>Settings</h1>
+        <table>
+          <tr>
+            <td>
+              <label for="channel">Youtube</label>
+              <input
+                type="radio"
+                id="youtube"
+                name="channel"
+                value="youtube"
+                checked
+              />
+            </td>
+            <td>
+              <label for="channel">Tiktok</label>
+              <input type="radio" id="tiktok" name="channel" value="tiktok" />
+            </td>
+          </tr>
+          <tr>
+            <td><span class="label">Audio file</span></td>
+            <td>
+              <input
+                type="file"
+                id="audioInput"
+                accept="audio/*"
+                style="display: none"
+              />
+              <input
+                class="input"
+                type="button"
+                value="browse"
+                onclick="document.getElementById('audioInput').click();"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td><span class="label">background file</span></td>
+            <td>
+              <input
+                type="file"
+                id="imageInput"
+                accept="image/*"
+                style="display: none"
+              />
+              <input
+                class="input"
+                type="button"
+                value="browse"
+                onclick="document.getElementById('imageInput').click();"
+              />
+            </td>
+          </tr>
+          <tr>
+            <td><button id="playButton">play</button></td>
+            <td><button id="stopButton">stop</button></td>
+          </tr>
+          <tr>
+            <td><button id="recordButton">record</button></td>
+            <td><button id="stopRecordingButton">stop</button></td>
+          </tr>
+        </table>
+        <!-- Adjust size as needed -->
+        <audio id="speechAudio" src="hook.mp3"></audio>
+        <!-- Replace with your MP3 path -->
+      </div>
+      <div class="content">
+        <canvas id="myCanvas" width="700" height="900"></canvas>
+      </div>
+    </div>
+
     <!-- Adjust size as needed -->
     <script src="main.js"></script>
   </body>
