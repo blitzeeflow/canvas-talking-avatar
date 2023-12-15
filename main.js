@@ -25,8 +25,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (window.innerWidth > window.innerHeight) {
       canvas.style.transform = "translate(-50%,20%)";
-    } else {
+    } else if (window.innerWidth >= 630) {
       canvas.style.transform = "translate(-50%,10%)";
+    } else {
+      canvas.style.transform = "translate(-50%,0%)";
     }
     // Redraw or reposition elements on canvas if needed
     // For instance, redraw the initial mouth state image
