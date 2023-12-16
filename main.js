@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const audio = document.getElementById("speechAudio");
   const audioInput = document.getElementById("audioInput");
   const imageInput = document.getElementById("imageInput");
+  const ffmpeg = new FFmpegWASM.FFmpeg();
   let recorder;
   // Aspect ratios for YouTube (16:9) and TikTok (9:16)
   const youtubeAspectRatio = 16 / 9;
@@ -282,16 +283,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const chunks = [];
     recorder.ondataavailable = (event) => chunks.push(event.data);
-    recorder.onstop = () => {
+    recorder.onstop = async () => {
       audio.pause();
       audio.currentTime = 0;
       document.querySelector(".record-icon").classList.remove("show");
       const blob = new Blob(chunks, { type: "video/webm;codecs=vp8,opus" });
       const url = URL.createObjectURL(blob);
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = "recording.webm";
+      // a.click();
+
+      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd";
+      await ffmpeg.load({
+        coreURL: await FFmpegUtil.toBlobURL(
+          `${baseURL}/ffmpeg-core.js`,
+          "text/javascript"
+        ),
+        wasmURL: await FFmpegUtil.toBlobURL(
+          `${baseURL}/ffmpeg-core.wasm`,
+          "application/wasm"
+        ),
+      });
+      ffmpeg.on("log", ({ message }) => {
+        console.log(message);
+      });
+      await ffmpeg.writeFile("input.webm", await FFmpegUtil.fetchFile(url));
+      await ffmpeg.exec([
+        "-i",
+        "input.webm",
+        "-async",
+        "1",
+        "-vf",
+        "scale=trunc(iw/2)*2:trunc(ih/2)*2",
+        "output.mp4",
+      ]);
+      const ffdata = await ffmpeg.readFile(`output.mp4`);
+      const ffurl = URL.createObjectURL(
+        new Blob([ffdata.buffer], { type: "video/mp4" })
+      );
+      // Create a download link
       const a = document.createElement("a");
-      a.href = url;
-      a.download = "recording.webm";
+      a.href = ffurl;
+      a.download = `output.mp4`;
+      document.body.appendChild(a);
       a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(ffurl);
     };
 
     document

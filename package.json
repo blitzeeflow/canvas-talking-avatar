@@ -1,0 +1,22 @@
+{
+  "name": "canvas-talking-avatar",
+  "version": "1.0.0",
+  "description": "fooocus image generation prompt\r a handsome trendy modern man with a beard, closed mouth, arms by his side, plain single colour black background",
+  "main": "main.js",
+  "scripts": {
+    "serve": "http-server -c-1  --cors"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blitzeeflow/canvas-talking-avatar.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blitzeeflow/canvas-talking-avatar/issues"
+  },
+  "homepage": "https://github.com/blitzeeflow/canvas-talking-avatar#readme",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}
