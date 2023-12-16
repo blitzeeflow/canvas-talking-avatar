@@ -152,6 +152,18 @@
           width: 100%;
           height: auto;
         }
+        tbody {
+          display: flex;
+          width: 100%;
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        tr:not(:last-child) {
+          border-right: 1px solid #242424;
+        }
+        h1 {
+          margin-top: 0;
+        }
       }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -164,71 +176,73 @@
       <div class="sidebar">
         <h1>Settings</h1>
         <table>
-          <tr>
-            <td>
-              <label for="channel">Youtube</label>
-              <input
-                type="radio"
-                id="youtube"
-                name="channel"
-                value="youtube"
-                checked
-              />
-            </td>
-            <td>
-              <label for="channel">Tiktok</label>
-              <input type="radio" id="tiktok" name="channel" value="tiktok" />
-            </td>
-          </tr>
-          <tr>
-            <td><span class="label">Audio file</span></td>
-            <td>
-              <input
-                type="file"
-                id="audioInput"
-                accept="audio/*"
-                style="display: none"
-              />
-              <input
-                class="input"
-                type="button"
-                value="browse"
-                onclick="document.getElementById('audioInput').click();"
-              />
-            </td>
-          </tr>
-          <tr>
-            <td><span class="label">background file</span></td>
-            <td>
-              <input
-                type="file"
-                id="imageInput"
-                accept="image/*"
-                style="display: none"
-              />
-              <input
-                class="input"
-                type="button"
-                value="browse"
-                onclick="document.getElementById('imageInput').click();"
-              />
-            </td>
-          </tr>
-          <tr>
-            <td><button id="playButton">play</button></td>
-            <td><button id="stopButton">stop</button></td>
-          </tr>
-          <tr>
-            <td><button id="recordButton">record</button></td>
-            <td><button id="stopRecordingButton">stop</button></td>
-          </tr>
-          <tr>
-            <td>
-              <a href="https://ttsmp3.com/" target="_blank"
-                >free text to speech</a
-              >
-            </td>
-          </tr>
+          <tbody>
+            <tr>
+              <td>
+                <label for="channel">Youtube</label>
+                <input
+                  type="radio"
+                  id="youtube"
+                  name="channel"
+                  value="youtube"
+                  checked
+                />
+              </td>
+              <td>
+                <label for="channel">Tiktok</label>
+                <input type="radio" id="tiktok" name="channel" value="tiktok" />
+              </td>
+            </tr>
+            <tr>
+              <td><span class="label">Audio file</span></td>
+              <td>
+                <input
+                  type="file"
+                  id="audioInput"
+                  accept="audio/*"
+                  style="display: none"
+                />
+                <input
+                  class="input"
+                  type="button"
+                  value="browse"
+                  onclick="document.getElementById('audioInput').click();"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><span class="label">background file</span></td>
+              <td>
+                <input
+                  type="file"
+                  id="imageInput"
+                  accept="image/*"
+                  style="display: none"
+                />
+                <input
+                  class="input"
+                  type="button"
+                  value="browse"
+                  onclick="document.getElementById('imageInput').click();"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><button id="playButton">play</button></td>
+              <td><button id="stopButton">stop</button></td>
+            </tr>
+            <tr>
+              <td><button id="recordButton">record</button></td>
+              <td><button id="stopRecordingButton">stop</button></td>
+            </tr>
+            <tr>
+              <td>
+                <a href="https://ttsmp3.com/" target="_blank"
+                  >free text to speech</a
+                >
+              </td>
+            </tr>
+          </tbody>
         </table>
         <!-- Adjust size as needed -->
         <audio id="speechAudio" src="hook.mp3"></audio>
