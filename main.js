@@ -24,13 +24,21 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   function resizeCanvas() {
+    const maxYouTubeWidth = 1920;
+    const maxYouTubeHeight = 1080;
+    const maxTikTokWidth = 1080;
+    const maxTikTokHeight = 1920;
+
     const aspectRatio =
       videoType === "youtube" ? youtubeAspectRatio : tiktokAspectRatio;
 
-    const windowWidth = canvas.parentElement.clientWidth;
-    const windowHeight = canvas.parentElement.clientHeight;
+    let maxWidth = videoType === "youtube" ? maxYouTubeWidth : maxTikTokWidth;
+    let maxHeight =
+      videoType === "youtube" ? maxYouTubeHeight : maxTikTokHeight;
 
-    // Calculate the canvas size
+    const windowWidth = Math.min(canvas.parentElement.clientWidth, maxWidth);
+    const windowHeight = Math.min(canvas.parentElement.clientHeight, maxHeight);
+
     let canvasWidth, canvasHeight;
 
     if (windowHeight < windowWidth / aspectRatio) {
@@ -41,10 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
       canvasHeight = canvasWidth / aspectRatio;
     }
 
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    canvas.width = Math.min(canvasWidth, maxWidth);
+    canvas.height = Math.min(canvasHeight, maxHeight);
 
-    // Redraw the image
     drawImageScaled(images[currentImageIndex]);
   }
 
@@ -259,6 +266,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelector("#tiktok").addEventListener("change", onSizeChange);
   document.querySelector("#recordButton").addEventListener("click", () => {
+    if (!audioContext) {
+      setupAudioContext();
+    }
     const combinedStream = new MediaStream([
       ...canvasStream.getTracks(),
       ...audioDestination.stream.getTracks(),
@@ -267,11 +277,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Record the combined stream
     recorder = new MediaRecorder(combinedStream, {
       mimeType: "video/webm",
+      videoBitsPerSecond: 2500000, // Adjust the bitrate as needed for quality
     });
 
     const chunks = [];
     recorder.ondataavailable = (event) => chunks.push(event.data);
     recorder.onstop = () => {
+      audio.pause();
+      audio.currentTime = 0;
+      document.querySelector(".record-icon").classList.remove("show");
       const blob = new Blob(chunks, { type: "video/webm;codecs=vp8,opus" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -293,6 +307,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Start recording
     recorder.start();
+    document.querySelector(".record-icon").classList.add("show");
+    setTimeout(() => {
+      audio.play();
+    }, 2000);
   });
 
   resizeCanvas();
