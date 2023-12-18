@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let swayDirection = 1;
   const maxSwayAngle = 0.002; // Maximum sway angle, for subtlety
   const swaySpeed = 0.00005; // Speed of swaying
+  let mouthUpdateCounter = 0;
+  let mouthUpdateFrequency = 7; // Higher value = slower mouth movement
   let background = new Image();
   background.src = "images.bg.png"; // Replace with your background image path
   background.onload = () => {
@@ -56,7 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
     drawImageScaled(images[currentImageIndex]);
   }
 
-  function drawImageScaled(img) {
+  async function drawImageScaled(img) {
+    img = await cropWhitespaceFromImage(img);
     const hRatio = canvas.width / img.width;
     const vRatio = canvas.height / img.height;
     const ratio = Math.min(hRatio, vRatio);
@@ -67,6 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const canvasAspectRatio = canvas.width / canvas.height;
     drawBackground();
+    console.log();
     ctx.drawImage(
       img,
       0,
@@ -82,8 +86,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   window.addEventListener("resize", resizeCanvas);
 
-  let mouthUpdateCounter = 0;
-  let mouthUpdateFrequency = 7; // Higher value = slower mouth movement
   background.src = "images/bg.png"; // Set path to background image
 
   background.onload = () => {
@@ -91,19 +93,29 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   const imageSources = [
-    "images/mouth-open-eyes-open.png",
-    "images/mouth-slightly-open-eyes-open.png",
-    "images/mouth-closed-eyes-open.png",
-    "images/mouth-open-eyes-closed.png",
-    "images/mouth-slightly-open-eyes-closed.png",
-    "images/mouth-closed-eyes-closed.png",
+    "images/avatar-1/mouth-open-eyes-open.png",
+    "images/avatar-1/mouth-slightly-open-eyes-open.png",
+    "images/avatar-1/mouth-closed-eyes-open.png",
+    "images/avatar-1/mouth-open-eyes-closed.png",
+    "images/avatar-1/mouth-slightly-open-eyes-closed.png",
+    "images/avatar-1/mouth-closed-eyes-closed.png",
   ];
 
-  const images = imageSources.map((src) => {
-    const img = new Image();
-    img.src = src;
-    return img;
-  });
+  async function loadImages(imageSources) {
+    const loadImage = (src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    };
+
+    const imagePromises = imageSources.map((src) => loadImage(src));
+    return Promise.all(imagePromises);
+  }
+
+  let images;
 
   let mouthState = 2; // Initial state: mouth closed
   let isBlinking = false;
@@ -125,6 +137,57 @@ document.addEventListener("DOMContentLoaded", function () {
   function randomIntFromInterval(min, max) {
     // min and max included
     return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+  function cropWhitespaceFromImage(image) {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      canvas.width = image.width;
+      canvas.height = image.height;
+      ctx.drawImage(image, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let minX = canvas.width,
+        minY = canvas.height,
+        maxX = 0,
+        maxY = 0;
+
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const index = (y * canvas.width + x) * 4;
+          const r = imageData.data[index];
+          const g = imageData.data[index + 1];
+          const b = imageData.data[index + 2];
+          const alpha = imageData.data[index + 3];
+
+          if (alpha !== 0 && (r < 250 || g < 250 || b < 250)) {
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+          }
+        }
+      }
+
+      const width = maxX - minX + 1;
+      const height = maxY - minY + 1;
+
+      const croppedCanvas = document.createElement("canvas");
+      croppedCanvas.width = width;
+      croppedCanvas.height = height;
+      const croppedCtx = croppedCanvas.getContext("2d");
+      croppedCtx.putImageData(
+        ctx.getImageData(minX, minY, width, height),
+        0,
+        0
+      );
+
+      const croppedImage = new Image();
+      croppedImage.onload = () => resolve(croppedImage);
+      croppedImage.onerror = reject;
+      croppedImage.src = croppedCanvas.toDataURL();
+    });
   }
 
   let timeSinceLastBlink = 0;
@@ -184,13 +247,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  images.forEach((img, index) => {
-    img.onload = () => {
-      if (index === 2) {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      }
-    };
-  });
+  // images.forEach((img, index) => {
+  //   img.onload = () => {
+  //     if (index === 2) {
+  //       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  //     }
+  //   };
+  // });
 
   function drawBackground() {
     const ctx = canvas.getContext("2d");
@@ -352,6 +415,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 2000);
   });
 
-  resizeCanvas();
-  animate();
+  console.log("here");
+  document.querySelector("#lipSpeed").addEventListener("input", (event) => {
+    mouthUpdateFrequency = event.target.value / 10;
+  });
+
+  loadImages(imageSources).then((_images) => {
+    console.log(_images);
+    images = _images;
+    resizeCanvas();
+    animate();
+    // 'images' is an array of loaded Image objects
+    // You can use these images here
+  });
 });
