@@ -21,7 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
   let mouthUpdateCounter = 0;
   let mouthUpdateFrequency = 7; // Higher value = slower mouth movement
   let background = new Image();
+  let isPaused = false;
   background.src = "images.bg.png"; // Replace with your background image path
+
   background.onload = () => {
     drawBackground();
   };
@@ -59,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function drawImageScaled(img) {
-    img = await cropWhitespaceFromImage(img);
+    // img = await cropWhitespaceFromImage(img);
     const hRatio = canvas.width / img.width;
     const vRatio = canvas.height / img.height;
     const ratio = Math.min(hRatio, vRatio);
@@ -92,7 +94,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
   };
 
-  const imageSources = [
+  let imageSources = [
     "images/avatar-1/mouth-open-eyes-open.png",
     "images/avatar-1/mouth-slightly-open-eyes-open.png",
     "images/avatar-1/mouth-closed-eyes-open.png",
@@ -195,6 +197,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const blinkDuration = 200; // Duration of a blink in milliseconds
 
   function animate(timestamp) {
+    if (isPaused) return;
     requestAnimationFrame(animate);
     analyser?.getByteFrequencyData(dataArray);
 
@@ -419,6 +422,28 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelector("#lipSpeed").addEventListener("input", (event) => {
     mouthUpdateFrequency = event.target.value / 10;
   });
+  document
+    .querySelector("#avatar-selector")
+    .addEventListener("change", (event) => {
+      isPaused = true;
+      const name = event.target.value;
+      imageSources = [
+        `images/${name}/mouth-open-eyes-open.png`,
+        `images/${name}/mouth-slightly-open-eyes-open.png`,
+        `images/${name}/mouth-closed-eyes-open.png`,
+        `images/${name}/mouth-open-eyes-closed.png`,
+        `images/${name}/mouth-slightly-open-eyes-closed.png`,
+        `images/${name}/mouth-closed-eyes-closed.png`,
+      ];
+      loadImages(imageSources).then(async (_images) => {
+        console.log(_images);
+        images = await Promise.all(
+          _images.map(async (img) => await cropWhitespaceFromImage(img))
+        );
+        isPaused = false;
+        animate();
+      });
+    });
 
   loadImages(imageSources).then((_images) => {
     console.log(_images);
