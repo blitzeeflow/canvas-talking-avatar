@@ -471,7 +471,6 @@ document.addEventListener("DOMContentLoaded", function () {
     images = _images;
     resize();
     animate();
-    // 'images' is an array of loaded Image objects
-    // You can use these images here
+    document.querySelector(".loading").classList.add("hide");
   });
 });

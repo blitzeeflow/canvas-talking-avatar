@@ -35,6 +35,15 @@
       input {
         cursor: pointer;
       }
+      .loading {
+        position: absolute;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
       body {
         width: 100vw;
@@ -58,6 +67,9 @@
       }
       .logo-title {
         margin-left: 10px;
+      }
+      .hide {
+        display: none;
       }
       .header {
         background-color: var(--dark-bg);
@@ -356,6 +368,7 @@
                   name="channel"
                   value="youtube"
                   checked
+                  autocomplete="off"
                 />
                 <label class="form-check-label" for="youtube"> Youtube </label>
               </div>
@@ -366,6 +379,7 @@
                   id="tiktok"
                   name="channel"
                   value="tiktok"
+                  autocomplete="off"
                 />
                 <label class="form-check-label" for="tiktok"> Tiktok </label>
               </div>
@@ -444,6 +458,15 @@
             </button>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="loading">
+      <div
+        class="spinner-border"
+        style="width: 60px; height: 60px"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
       </div>
     </div>
     <!-- Adjust size as needed -->
