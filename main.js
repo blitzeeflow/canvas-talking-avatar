@@ -2,6 +2,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const canvas = document.getElementById("myCanvas");
   const ctx = canvas.getContext("2d");
   const canvasStream = canvas.captureStream(30); // 30 FPS
+
+  // Create the second canvas for recording
+  const recordingCanvas = document.createElement("canvas");
+  const recordingStream = recordingCanvas.captureStream(30); // 30 FPS
+  recordingCanvas.style.display = "none"; // Keep it hidden
+  document.body.appendChild(recordingCanvas);
+
   const audio = document.getElementById("speechAudio");
   const audioInput = document.getElementById("audioInput");
   const imageInput = document.getElementById("imageInput");
@@ -31,12 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
     drawBackground();
   };
 
-  function resizeCanvas(forRecording) {
-    // Store the original size before resizing for recording
-    if (forRecording) {
-      originalCanvasWidth = canvas.width;
-      originalCanvasHeight = canvas.height;
-    }
+  function resizeCanvas(targetCanvas = canvas) {
     const maxYouTubeWidth = 1920;
     const maxYouTubeHeight = 1080;
     const maxTikTokWidth = 1080;
@@ -61,45 +63,48 @@ document.addEventListener("DOMContentLoaded", function () {
       canvasWidth = windowWidth;
       canvasHeight = canvasWidth / aspectRatio;
     }
-    if (forRecording == undefined) {
-      canvas.width = Math.min(canvasWidth, maxWidth);
-      canvas.height = Math.min(canvasHeight, maxHeight);
-    } else if (forRecording == false) {
-      canvas.width = originalCanvasWidth;
-      canvas.height = originalCanvasHeight;
-    } else if (forRecording == true) {
-      canvas.width = videoType === "youtube" ? 1920 : 1080;
-      canvas.height = videoType === "youtube" ? 1080 : 1920;
+
+    canvas.width = Math.min(canvasWidth, maxWidth);
+    canvas.height = Math.min(canvasHeight, maxHeight);
+    if (targetCanvas === recordingCanvas) {
+      targetCanvas.width = videoType === "youtube" ? 1920 : 1080;
+      targetCanvas.height = videoType === "youtube" ? 1080 : 1920;
     }
 
-    drawImageScaled(images[currentImageIndex]);
+    addAssetsToCanvas(images[currentImageIndex]);
   }
 
-  async function drawImageScaled(img) {
-    const hRatio = canvas.width / img.width;
-    const vRatio = canvas.height / img.height;
+  function addAssetsToCanvas(img) {
+    drawImageScaled(img);
+    drawImageScaled(img, recordingCanvas);
+  }
+
+  async function drawImageScaled(img, targetCanvas = canvas) {
+    const targetCtx = targetCanvas.getContext("2d");
+    const hRatio = targetCanvas.width / img.width;
+    const vRatio = targetCanvas.height / img.height;
     const ratio = Math.min(hRatio, vRatio);
 
-    const centerShift_x = (canvas.width - img.width * ratio) / 2;
-    const centerShift_y = (canvas.height - img.height * ratio) / 2;
+    const centerShift_x = (targetCanvas.width - img.width * ratio) / 2;
+    const centerShift_y = (targetCanvas.height - img.height * ratio) / 2;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const canvasAspectRatio = canvas.width / canvas.height;
-    drawBackground();
-    ctx.drawImage(
+    targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+    const canvasAspectRatio = targetCanvas.width / targetCanvas.height;
+    drawBackground(targetCanvas);
+    targetCtx.drawImage(
       img,
       0,
       0,
       img.width,
       img.height,
       centerShift_x,
-      centerShift_y + canvas.height * 0.1,
+      centerShift_y + targetCanvas.height * 0.1,
       img.width * ratio,
       img.height * ratio
     );
   }
 
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("resize", resize);
 
   background.src = "images/backgrounds/gamer-01.png"; // Set path to background image
 
@@ -249,7 +254,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Combine mouth state and blink state to get current image index
     currentImageIndex = mouthState + (isBlinking ? 3 : 0);
 
-    drawImageScaled(images[currentImageIndex]);
+    addAssetsToCanvas(images[currentImageIndex]);
     // Restore the canvas state
     ctx.restore();
   }
@@ -268,9 +273,9 @@ document.addEventListener("DOMContentLoaded", function () {
   //   };
   // });
 
-  function drawBackground() {
-    const ctx = canvas.getContext("2d");
-    const canvasAspectRatio = canvas.width / canvas.height;
+  function drawBackground(targetCanvas = canvas) {
+    const ctx = targetCanvas.getContext("2d");
+    const canvasAspectRatio = targetCanvas.width / targetCanvas.height;
     const imgAspectRatio = background.width / background.height;
 
     let drawWidth, drawHeight, offsetX, offsetY;
@@ -278,20 +283,20 @@ document.addEventListener("DOMContentLoaded", function () {
     // Scaling logic based on aspect ratios
     if (canvasAspectRatio > imgAspectRatio) {
       // Canvas is wider than the image (relative to their aspect ratios)
-      drawWidth = canvas.width;
+      drawWidth = targetCanvas.width;
       drawHeight = drawWidth / imgAspectRatio;
       offsetX = 0;
-      offsetY = (canvas.height - drawHeight) / 2; // Center vertically
+      offsetY = (targetCanvas.height - drawHeight) / 2; // Center vertically
     } else {
       // Canvas is taller than or equal to the image (relative to their aspect ratios)
-      drawHeight = canvas.height;
+      drawHeight = targetCanvas.height;
       drawWidth = drawHeight * imgAspectRatio;
-      offsetX = (canvas.width - drawWidth) / 2; // Center horizontally
+      offsetX = (targetCanvas.width - drawWidth) / 2; // Center horizontally
       offsetY = 0;
     }
 
     // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
 
     // Draw the scaled image
     ctx.drawImage(background, offsetX, offsetY, drawWidth, drawHeight);
@@ -299,7 +304,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function onSizeChange(event) {
     videoType = event.target.value;
+    resize();
+  }
+
+  function resize() {
     resizeCanvas();
+    resizeCanvas(recordingCanvas);
   }
 
   imageInput.addEventListener("change", function (event) {
@@ -308,7 +318,6 @@ document.addEventListener("DOMContentLoaded", function () {
       const imageUrl = URL.createObjectURL(files[0]);
       background = new Image();
       background.onload = () => {
-        console.log("imageUrl", imageUrl);
         drawBackground();
       };
       background.src = imageUrl;
@@ -344,16 +353,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelector("#tiktok").addEventListener("change", onSizeChange);
   document.querySelector("#recordButton").addEventListener("click", () => {
-    resizeCanvas(true);
+    resize();
 
     if (!audioContext) {
       setupAudioContext();
     }
     const combinedStream = new MediaStream([
-      ...canvasStream.getTracks(),
+      ...recordingStream.getTracks(),
       ...audioDestination.stream.getTracks(),
     ]);
-
     // Record the combined stream
     recorder = new MediaRecorder(combinedStream, {
       mimeType: "video/webm",
@@ -363,7 +371,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const chunks = [];
     recorder.ondataavailable = (event) => chunks.push(event.data);
     recorder.onstop = async () => {
-      resizeCanvas(false);
+      resize();
       audio.pause();
       audio.currentTime = 0;
       document.querySelector(".record-icon").classList.remove("show");
@@ -432,7 +440,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 2000);
   });
 
-  console.log("here");
   document.querySelector("#lipSpeed").addEventListener("input", (event) => {
     mouthUpdateFrequency = event.target.value / 10;
   });
@@ -440,7 +447,6 @@ document.addEventListener("DOMContentLoaded", function () {
     .querySelector("#background-selector")
     .addEventListener("change", (event) => {
       const name = event.target.value;
-      console.log(name);
       background.src = `images/backgrounds/${name}`;
     });
   document
@@ -462,9 +468,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
   loadImages(imageSources).then((_images) => {
-    console.log(_images);
     images = _images;
-    resizeCanvas();
+    resize();
     animate();
     // 'images' is an array of loaded Image objects
     // You can use these images here
