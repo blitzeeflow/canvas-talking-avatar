@@ -453,6 +453,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .querySelector("#avatar-selector")
     .addEventListener("change", async (event) => {
       isPaused = true;
+      document.querySelector(".loading").classList.remove("hide");
       const name = event.target.value;
       imageSources = [
         `images/${name}/mouth-open-eyes-open.png`,
@@ -465,6 +466,7 @@ document.addEventListener("DOMContentLoaded", function () {
       images = await loadImages(imageSources);
       isPaused = false;
       animate();
+      document.querySelector(".loading").classList.add("hide");
     });
 
   loadImages(imageSources).then((_images) => {
