@@ -210,6 +210,7 @@
       }
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -225,7 +226,7 @@
   <body>
     <nav class="navbar bg-body-tertiary">
       <div class="container">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="index.html">
           <img src="images/logo.png" alt="logo" width="30" height="24" />
           <span class="logo-title">Avato Studio</span>
         </a>
@@ -278,7 +279,12 @@
             <div class="card-body">
               <h5 class="card-title">Record</h5>
               <div class="d-grid gap-2">
-                <button type="button" class="btn btn-primary" id="recordButton">
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#recordModal"
+                >
                   Record
                 </button>
                 <button
@@ -302,16 +308,28 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Scene</h5>
-              <div class="input-group mb-3">
-                <label class="input-group-text" for="imageInput"
-                  >Background</label
+              <div class="mb-3">
+                <label for="background-selector" class="form-label"
+                  >Select Background</label
                 >
-                <input
-                  type="file"
-                  id="imageInput"
-                  accept="image/*"
-                  class="form-control"
-                />
+                <select class="form-select" id="background-selector">
+                  <option value="blue-01.jpg">Blue 01</option>
+                  <option value="gamer-01.png" selected>Gamer 01</option>
+                  <option value="gamer-02.png">Studio 01</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="imageInput"
+                  >Custom Background</label
+                >
+                <div class="input-group mb-3">
+                  <input
+                    type="file"
+                    id="imageInput"
+                    accept="image/*"
+                    class="form-control"
+                  />
+                </div>
               </div>
               <div class="mb-3">
                 <label for="avatar-selector" class="form-label"
@@ -360,7 +378,68 @@
     </div>
 
     <audio id="speechAudio" src="hook.mp3"></audio>
-
+    <div
+      class="modal fade"
+      id="recordModal"
+      tabindex="-1"
+      aria-labelledby="recordModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="recordModalLabel">
+              Recording Info
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>Here are some things to consider when recording:</p>
+            <ul>
+              <li>
+                Keep this tab in view at all times during recording because if
+                the tab is inactive the lipsync will not work.
+              </li>
+              <li>
+                The video will increase in size when recording to record in a
+                higher resolution. This will revert back to original size after
+                the recording
+              </li>
+              <li>
+                At the end of the recording, it will automatically download a
+                webm file. If you want an mp4 file then you can use a free site
+                like
+                <a href="https://online-video-cutter.com/" target="_blank"
+                  >video cutter</a
+                >
+                to convert it.
+              </li>
+              <li>
+                There should be a blinking circle to indicate the recording is
+                in progress.
+              </li>
+              <li>Click start when ready</li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-dismiss="modal"
+              aria-label="Start"
+              id="recordButton"
+            >
+              Start
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Adjust size as needed -->
     <script src="main.js"></script>
   </body>

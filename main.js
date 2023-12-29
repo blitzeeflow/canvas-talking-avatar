@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let originalCanvasWidth = 0;
   let originalCanvasHeight = 0;
 
-  background.src = "images.bg.png"; // Replace with your background image path
+  background.src = "images/backgrounds/gamer-01.png"; // Replace with your background image path
 
   background.onload = () => {
     drawBackground();
@@ -69,8 +69,8 @@ document.addEventListener("DOMContentLoaded", function () {
       canvas.width = originalCanvasWidth;
       canvas.height = originalCanvasHeight;
     } else {
-      canvas.width = 1920;
-      canvas.height = 1080;
+      canvas.width = videoType === "youtube" ? 1920 : 1080;
+      canvas.height = videoType === "youtube" ? 1080 : 1920;
     }
 
     drawImageScaled(images[currentImageIndex]);
@@ -88,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const canvasAspectRatio = canvas.width / canvas.height;
     drawBackground();
-    console.log();
     ctx.drawImage(
       img,
       0,
@@ -96,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
       img.width,
       img.height,
       centerShift_x,
-      centerShift_y + canvas.height * 0.2,
+      centerShift_y + canvas.height * 0.1,
       img.width * ratio,
       img.height * ratio
     );
@@ -104,11 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   window.addEventListener("resize", resizeCanvas);
 
-  background.src = "images/bg.png"; // Set path to background image
-
-  background.onload = () => {
-    // ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-  };
+  background.src = "images/backgrounds/gamer-01.png"; // Set path to background image
 
   let imageSources = [
     "images/avatar-1/mouth-open-eyes-open.png",
@@ -350,9 +345,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelector("#tiktok").addEventListener("change", onSizeChange);
   document.querySelector("#recordButton").addEventListener("click", () => {
-    if (videoType === "youtube") {
-      resizeCanvas(true);
-    }
+    resizeCanvas(true);
+
     if (!audioContext) {
       setupAudioContext();
     }
@@ -443,6 +437,13 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelector("#lipSpeed").addEventListener("input", (event) => {
     mouthUpdateFrequency = event.target.value / 10;
   });
+  document
+    .querySelector("#background-selector")
+    .addEventListener("change", (event) => {
+      const name = event.target.value;
+      console.log(name);
+      background.src = `images/backgrounds/${name}`;
+    });
   document
     .querySelector("#avatar-selector")
     .addEventListener("change", (event) => {
