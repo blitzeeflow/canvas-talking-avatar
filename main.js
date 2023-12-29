@@ -77,7 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function drawImageScaled(img) {
-    // img = await cropWhitespaceFromImage(img);
     const hRatio = canvas.width / img.width;
     const vRatio = canvas.height / img.height;
     const ratio = Math.min(hRatio, vRatio);
@@ -125,7 +124,8 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     const imagePromises = imageSources.map((src) => loadImage(src));
-    return Promise.all(imagePromises);
+    const loadedImages = await Promise.all(imagePromises);
+    return Promise.all(loadedImages.map((img) => cropWhitespaceFromImage(img)));
   }
 
   let images;
@@ -446,7 +446,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   document
     .querySelector("#avatar-selector")
-    .addEventListener("change", (event) => {
+    .addEventListener("change", async (event) => {
       isPaused = true;
       const name = event.target.value;
       imageSources = [
@@ -457,14 +457,9 @@ document.addEventListener("DOMContentLoaded", function () {
         `images/${name}/mouth-slightly-open-eyes-closed.png`,
         `images/${name}/mouth-closed-eyes-closed.png`,
       ];
-      loadImages(imageSources).then(async (_images) => {
-        console.log(_images);
-        images = await Promise.all(
-          _images.map(async (img) => await cropWhitespaceFromImage(img))
-        );
-        isPaused = false;
-        animate();
-      });
+      images = await loadImages(imageSources);
+      isPaused = false;
+      animate();
     });
 
   loadImages(imageSources).then((_images) => {
