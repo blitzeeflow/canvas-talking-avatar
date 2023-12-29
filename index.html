@@ -2,6 +2,24 @@
 <html>
   <head>
     <title>Avato Studio</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="images/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/site.webmanifest" />
     <!-- <script src="lib/ffmpeg.min.js"></script>
     <script src="lib/ffmpeg-util.js"></script> -->
     <style>
@@ -25,7 +43,7 @@
         margin: 0;
         background: #f0f0f0 !important;
         background-size: cover;
-        overflow: hidden;
+        /* overflow: hidden; */
         color: white;
         font-family: "Trebuchet MS", sans-serif;
         display: flex;
@@ -72,61 +90,25 @@
         height: 100%;
         position: relative;
       }
-      .play-button-outer.hide {
-        display: none;
+      video {
+        width: 100%;
+        border-radius: 10px;
       }
-      .play-button-outer {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 10em;
-        height: 10em;
-        background-color: rgba(0, 0, 0, 0.7);
-        cursor: pointer;
+      .main {
+        margin-top: 50px;
+      }
+      ul {
+        list-style: none; /* Remove default bullets */
       }
 
-      .play-button {
-        margin: 0 auto;
-        top: 25%;
-        position: relative;
-        width: 0;
-        height: 0;
-        border-style: solid;
-        border-width: 2.5em 0 2.5em 5em;
-        border-color: transparent transparent transparent #fff;
-        opacity: 0.75;
-      }
-
-      .play-button-outer:hover {
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-
-      .play-button-outer:hover .play-button {
-        opacity: 1;
-      }
-      .custom-file-input::-webkit-file-upload-button {
-        visibility: hidden;
-      }
-      .input {
-        display: inline-block;
-        background: var(--action-color);
-        border-radius: 6px;
-        border: 0;
-        padding: 5px 8px;
-        outline: none;
-        white-space: nowrap;
-        -webkit-user-select: none;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 12px;
-        color: white;
-      }
-      .label {
-        margin-right: 10px;
-      }
-      .card {
-        margin-top: 20px;
+      ul li::before {
+        content: "\2022"; /* Add content: \2022 is the CSS Code/unicode for a bullet */
+        color: #651ee6; /* Change the color */
+        font-weight: bold; /* If you want it to be bold */
+        display: inline-block; /* Needed to add space between the bullet and the text */
+        width: 1em; /* Also needed for space (tweak if needed) */
+        margin-left: -1em; /* Also needed for space (tweak if needed) */
+        font-size: 26px;
       }
       button {
         background: var(--action-color);
@@ -138,56 +120,42 @@
         color: white;
         width: 100%;
       }
-      .record-icon {
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        background-color: red;
-        position: absolute;
-        right: 10px;
-        top: 10px;
-        display: none;
-        animation: blinker 1s linear infinite;
+      a.button {
+        padding: 12px 16px;
+        background-color: var(--bs-btn-bg);
+        color: white !important;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: bold;
+        margin-top: 40px;
+        margin-bottom: 40px;
+        display: inline-block;
       }
-      .record-icon.show {
-        display: block;
+      img.how {
+        width: 100%;
+        border-radius: 10px;
       }
-      a {
-        color: white;
+      .row {
+        margin-bottom: 50px;
       }
-      td {
-        padding: 5px;
+      .white {
+        background-color: white;
+        padding: 30px !important;
+        border-radius: 20px;
+        box-sizing: border-box;
+        margin-bottom: 80px;
       }
-      #lipSpeed {
-        margin-left: 10px;
+      .footer {
+        background-color: #e4e4e4;
+        padding: 30px;
+        font-size: 12px;
       }
-      @keyframes blinker {
-        50% {
-          opacity: 0;
-        }
-      }
-      @media only screen and (max-width: 600px) {
-        body {
-          overflow-y: auto;
-        }
-        .main-container {
+      @media (max-width: 768px) {
+        .row {
           flex-direction: column;
         }
-        .sidebar {
-          width: 100%;
-          height: auto;
-        }
-        tbody {
-          display: flex;
-          width: 100%;
-          flex-direction: row;
-          flex-wrap: wrap;
-        }
-        tr:not(:last-child) {
-          border-right: 1px solid #242424;
-        }
-        h1 {
-          margin-top: 0;
+        p {
+          padding-top: 20px;
         }
       }
     </style>
@@ -213,137 +181,74 @@
         </a>
       </div>
     </nav>
-    <!-- <div class="header">
-      <span>Avatar LipSync</span>
-    </div> -->
-    <div class="container content-container text-center">
-      <div class="row">
+    <div class="container main white">
+      <div class="row align-items-start">
         <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Audio</h5>
-              <div class="input-group mb-3">
-                <label class="input-group-text" for="audioInput">Speech</label>
-                <input
-                  type="file"
-                  class="form-control"
-                  id="audioInput"
-                  accept="audio/*"
-                />
-              </div>
-              <div class="input-group mb-3">
-                <label class="form-check-label" for="lipSpeed">Lip Speed</label>
-                <input
-                  type="range"
-                  min="1"
-                  max="300"
-                  value="70"
-                  class="slider"
-                  id="lipSpeed"
-                />
-              </div>
-
-              <div class="d-grid gap-2">
-                <label class="form-check-label" for="lipSpeed"
-                  >Test Audio</label
-                >
-                <button type="button" class="btn btn-primary" id="playButton">
-                  Play
-                </button>
-                <button type="button" class="btn btn-primary" id="stopButton">
-                  Stop
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Record</h5>
-              <div class="d-grid gap-2">
-                <button type="button" class="btn btn-primary" id="recordButton">
-                  Record
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  id="stopRecordingButton"
-                >
-                  Stop
-                </button>
-              </div>
-            </div>
-          </div>
+          <h1 class="display-4">
+            Transform Text into Stunning Videos for Free
+          </h1>
+          <ul>
+            <li>
+              <strong>Bring Your Audio to Life:</strong> Add your speech audio
+              to videos with ease.
+            </li>
+            <li>
+              <strong>Free Avatar Selection:</strong> Choose from a variety of
+              free avatars.
+            </li>
+            <li>
+              <strong>Completely Free Tool:</strong> Ideal for educators,
+              content creators, and businesses.
+            </li>
+          </ul>
+          <a class="button" href="studio.html">Create a free AI video</a>
         </div>
         <div class="col">
-          <div class="content">
-            <canvas id="myCanvas" width="700" height="900"></canvas>
-            <div class="record-icon"></div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Scene</h5>
-              <div class="input-group mb-3">
-                <label class="input-group-text" for="imageInput"
-                  >Background</label
-                >
-                <input
-                  type="file"
-                  id="imageInput"
-                  accept="image/*"
-                  class="form-control"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="avatar-selector" class="form-label"
-                  >Select Avatar</label
-                >
-                <select class="form-select" id="avatar-selector">
-                  <option value="avatar-1">Dave</option>
-                  <option value="avatar-2">Rick</option>
-                  <option value="avatar-3">Rachel</option>
-                </select>
-              </div>
-              <h6 class="card-subtitle mb-2 text-body-secondary">Video Size</h6>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  id="youtube"
-                  name="channel"
-                  value="youtube"
-                  checked
-                />
-                <label class="form-check-label" for="youtube"> Youtube </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  id="tiktok"
-                  name="channel"
-                  value="tiktok"
-                />
-                <label class="form-check-label" for="tiktok"> Tiktok </label>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Utilities</h5>
-              <a href="https://ttsmp3.com/" target="_blank"
-                >free text to speech</a
-              >
-            </div>
-          </div>
+          <video autoplay="true" muted="true" playsinline="true">
+            <source src="video/intro.mp4" type="video/mp4;" />
+          </video>
         </div>
       </div>
     </div>
-
-    <audio id="speechAudio" src="hook.mp3"></audio>
-
-    <!-- Adjust size as needed -->
-    <script src="main.js"></script>
+    <div class="container white">
+      <div class="row">
+        <div class="col">
+          <h3 class="display-6">
+            About Our Innovative Free Avatar Text-to-Speech App
+          </h3>
+        </div>
+      </div>
+      <div class="row align-items-start">
+        <div class="col"><img class="how" src="images/how.jpg" /></div>
+        <div class="col">
+          <p>
+            Welcome to our app, where we bring a touch of humanity to digital
+            interactions. Our unique text-to-speech platform uses just three
+            AI-generated images to create lifelike lip movements and natural eye
+            blinking, infusing each avatar with a sense of realism. While this
+            approach is straightforward and not overly complex, it effectively
+            captures the essence of speech and expression, making it a perfect
+            fit for a web-based application that's accessible to everyone.
+          </p>
+          <p>
+            Designed to be user-friendly and non-technical, our app allows users
+            to easily add their own speech audio and select from a variety of
+            charming free avatars. This simple yet innovative approach ensures
+            that creating engaging video content is not only possible but
+            enjoyable for educators, content creators, and businesses alike. By
+            choosing to make this technology free and client-side, we've
+            prioritized accessibility and convenience, ensuring that anyone,
+            anywhere, can use our app to enhance their digital storytelling.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid footer">
+      <div class="container">
+        <div class="row">
+          <div class="col">© 2023 Avato Studio. All rights reserved.</div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

@@ -22,13 +22,21 @@ document.addEventListener("DOMContentLoaded", function () {
   let mouthUpdateFrequency = 7; // Higher value = slower mouth movement
   let background = new Image();
   let isPaused = false;
+  let originalCanvasWidth = 0;
+  let originalCanvasHeight = 0;
+
   background.src = "images.bg.png"; // Replace with your background image path
 
   background.onload = () => {
     drawBackground();
   };
 
-  function resizeCanvas() {
+  function resizeCanvas(forRecording) {
+    // Store the original size before resizing for recording
+    if (forRecording) {
+      originalCanvasWidth = canvas.width;
+      originalCanvasHeight = canvas.height;
+    }
     const maxYouTubeWidth = 1920;
     const maxYouTubeHeight = 1080;
     const maxTikTokWidth = 1080;
@@ -54,8 +62,16 @@ document.addEventListener("DOMContentLoaded", function () {
       canvasHeight = canvasWidth / aspectRatio;
     }
 
-    canvas.width = Math.min(canvasWidth, maxWidth);
-    canvas.height = Math.min(canvasHeight, maxHeight);
+    if (forRecording == undefined) {
+      canvas.width = Math.min(canvasWidth, maxWidth);
+      canvas.height = Math.min(canvasHeight, maxHeight);
+    } else if (forRecording == false) {
+      canvas.width = originalCanvasWidth;
+      canvas.height = originalCanvasHeight;
+    } else {
+      canvas.width = 1920;
+      canvas.height = 1080;
+    }
 
     drawImageScaled(images[currentImageIndex]);
   }
@@ -199,17 +215,17 @@ document.addEventListener("DOMContentLoaded", function () {
   function animate(timestamp) {
     if (isPaused) return;
     requestAnimationFrame(animate);
+
     analyser?.getByteFrequencyData(dataArray);
 
     // Increment the mouth update counter
-    mouthUpdateCounter++;
+    if (dataArray) mouthUpdateCounter++;
 
     if (mouthUpdateCounter >= mouthUpdateFrequency && dataArray) {
       // Update the mouth state based on audio analysis
       let sum = dataArray?.reduce((a, b) => a + b, 0) || 0;
       let average = sum / dataArray?.length;
-
-      if (average < 5) {
+      if (average < 1) {
         mouthState = 2; // Mouth closed
       } else if (average < 20) {
         mouthState = randomIntFromInterval(1, 2); // Mouth slightly open
@@ -291,6 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
     videoType = event.target.value;
     resizeCanvas();
   }
+
   imageInput.addEventListener("change", function (event) {
     const files = event.target.files;
     if (files.length > 0) {
@@ -333,6 +350,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelector("#tiktok").addEventListener("change", onSizeChange);
   document.querySelector("#recordButton").addEventListener("click", () => {
+    if (videoType === "youtube") {
+      resizeCanvas(true);
+    }
     if (!audioContext) {
       setupAudioContext();
     }
@@ -350,6 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const chunks = [];
     recorder.ondataavailable = (event) => chunks.push(event.data);
     recorder.onstop = async () => {
+      resizeCanvas(false);
       audio.pause();
       audio.currentTime = 0;
       document.querySelector(".record-icon").classList.remove("show");
