@@ -61,14 +61,13 @@ document.addEventListener("DOMContentLoaded", function () {
       canvasWidth = windowWidth;
       canvasHeight = canvasWidth / aspectRatio;
     }
-
     if (forRecording == undefined) {
       canvas.width = Math.min(canvasWidth, maxWidth);
       canvas.height = Math.min(canvasHeight, maxHeight);
     } else if (forRecording == false) {
       canvas.width = originalCanvasWidth;
       canvas.height = originalCanvasHeight;
-    } else {
+    } else if (forRecording == true) {
       canvas.width = videoType === "youtube" ? 1920 : 1080;
       canvas.height = videoType === "youtube" ? 1080 : 1920;
     }
