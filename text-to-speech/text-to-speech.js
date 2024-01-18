@@ -81,7 +81,7 @@ worker.addEventListener("message", (e) => {
       disableButton(false);
       const blobUrl = URL.createObjectURL(e.data.output);
       audio.innerHTML = `  <source src="${blobUrl}" type="audio/wav" />`;
-
+      if (window.audioChanged) window.audioChanged(blobUrl);
       break;
   }
 });

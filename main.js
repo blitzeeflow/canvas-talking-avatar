@@ -475,4 +475,7 @@ document.addEventListener("DOMContentLoaded", function () {
     animate();
     document.querySelector(".loading").classList.add("hide");
   });
+  window.audioChanged = (audio) => {
+    speechAudio.src = audio;
+  };
 });

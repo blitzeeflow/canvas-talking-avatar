@@ -194,6 +194,33 @@
       #lipSpeed {
         margin-left: 10px;
       }
+      .hide {
+        display: none !important;
+      }
+      textarea {
+        width: 100%;
+        border-radius: 10px !important;
+        min-height: 200px;
+        padding: 10px;
+        box-sizing: border-box;
+        margin-bottom: 10px !important;
+      }
+      #generating {
+        background: rgba(0, 0, 0, 0.5);
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+      }
+      audio {
+        width: 100%;
+        margin-top: 10px;
+      }
       @keyframes blinker {
         50% {
           opacity: 0;
@@ -256,7 +283,9 @@
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Audio</h5>
-              <label class="form-label" for="audioInput">Speech MP3 File</label>
+              <label class="form-label" for="audioInput"
+                >Upload Speech MP3 File</label
+              >
               <div class="input-group mb-3">
                 <input
                   type="file"
@@ -264,6 +293,50 @@
                   id="audioInput"
                   accept="audio/*"
                 />
+              </div>
+              <div class="input-group mb-3">
+                <label class="form-label" for="audioInput"
+                  >Text to Speech</label
+                >
+                <textarea id="text-element"></textarea>
+                <div class="mb-3">
+                  <label for="speaker-selector" class="form-label"
+                    >Select Voice</label
+                  >
+                  <select id="speaker" className="form-select">
+                    <option value="cmu_us_slt_arctic-wav-arctic_a0001">
+                      US female 1
+                    </option>
+                    <option value="cmu_us_clb_arctic-wav-arctic_a0001">
+                      US female 2
+                    </option>
+                    <option value="cmu_us_bdl_arctic-wav-arctic_a0003">
+                      US male 1
+                    </option>
+                    <option value="cmu_us_rms_arctic-wav-arctic_a0003">
+                      US male 2
+                    </option>
+                    <option value="cmu_us_jmk_arctic-wav-arctic_a0002">
+                      Canadian male
+                    </option>
+                    <option value="cmu_us_awb_arctic-wav-arctic_b0002">
+                      Scottish male
+                    </option>
+                    <option value="cmu_us_ksp_arctic-wav-arctic_a0007">
+                      Indian male
+                    </option>
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="generate-button"
+                >
+                  Generate
+                </button>
+                <audio id="audio" controls>
+                  <source src="" type="audio/wav" />
+                </audio>
               </div>
               <div class="input-group mb-3">
                 <label class="form-check-label" for="lipSpeed">Lip Speed</label>
@@ -480,6 +553,53 @@
         </div>
       </div>
     </div>
+    <div
+      class="modal fade"
+      id="loadingModal"
+      tabindex="-1"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">
+              <img src="images/logo.png" alt="logo" width="30" height="24" />
+              <span class="logo-title">Avato Studio</span>
+            </h1>
+          </div>
+          <div class="modal-body text-center">
+            <p>Hi, we're setting up the application for you.</p>
+            <p>
+              If this is your first time it can take a while to load because we
+              install an AI text to speech model into the browser.
+            </p>
+            <p>After the first time it will load much faster.</p>
+            <div>
+              <h2>Loading Model</h2>
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div
+                class="progress"
+                role="progressbar"
+                aria-label="Basic example"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+                <div class="progress-bar" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="generating" class="hide">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
     <div class="loading">
       <div
         class="spinner-border"
@@ -491,5 +611,6 @@
     </div>
     <!-- Adjust size as needed -->
     <script src="main.js"></script>
+    <script src="text-to-speech/text-to-speech.js" type="module"></script>
   </body>
 </html>
